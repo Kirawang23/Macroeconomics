@@ -1,9 +1,12 @@
+#This code is corresbonding to the Practical Time Series Analysis course on cousera
+#https://www.coursera.org/learn/practical-time-series-analysis/home/welcome
+
 #######################
 ########Lec 1##########
 #######################
 #how to get histogram and change default
 getwd()
-setwd('E:\\¹«¹²¿Î³Ì\\2021ÄêÉÏ°ëÆÚ\\Ê±ĞòÁĞÑ§Ï°')
+setwd('E:\\å…¬å…±è¯¾ç¨‹\\2021å¹´ä¸ŠåŠæœŸ\\æ—¶åºåˆ—å­¦ä¹ ')
 getwd()
 install.packages('faraway')
 data(package='faraway')
@@ -22,7 +25,7 @@ lines(density(data$Time),col='yellow',lwd=5)
 #######################
 #how to plot scatterplot
 set.seed=2016
-scores1=round(rnorm(50,78,10))#round ËÄÉáÎåÈë
+scores1=round(rnorm(50,78,10))#round å››èˆäº”å…¥
 scores2=round(rnorm(50,70,14))
 scores1
 scores2
@@ -54,18 +57,18 @@ plot(co2.residuals~time(co2),xlim=c(1960,1963),main='Zoomed Residuals')
 #Hypothesis-t Test
 help(sleep)
 plot(extra~group,data=sleep,main='Extra Sleep in Gossett Data by Group')
-attach(sleep) #²»ÓÃµ÷ÓÃdataframe£¬Ö±½ÓµÃµ½sleepÖĞµÄ±äÁ¿
+attach(sleep) #ä¸ç”¨è°ƒç”¨dataframeï¼Œç›´æ¥å¾—åˆ°sleepä¸­çš„å˜é‡
 extra.1=extra[group==1]
 extra.2=extra[group==2]
-t.test(extra.1,extra.2,paired = TRUE,alternative = 'two.sided') #Ë«±ß¼ì²â-²»µÈºÅ
+t.test(extra.1,extra.2,paired = TRUE,alternative = 'two.sided') #åŒè¾¹æ£€æµ‹-ä¸ç­‰å·
 
 #######################
 ########Lec 5##########
 #######################
 #Correlation
 help(trees)
-pairs(trees,pch=21,bg=c('red')) #pair»æÍ¼¾ØÕó
-cov(trees) #covariance »áÒòÎªµ¥Î»¸ü´ó¶ø¸ü´ó£¬corrÏû³ıÁËÕâ¸öÈ±µã
+pairs(trees,pch=21,bg=c('red')) #pairç»˜å›¾çŸ©é˜µ
+cov(trees) #covariance ä¼šå› ä¸ºå•ä½æ›´å¤§è€Œæ›´å¤§ï¼Œcorræ¶ˆé™¤äº†è¿™ä¸ªç¼ºç‚¹
 cor(trees)
 
 #######################
@@ -84,10 +87,10 @@ plot(flu,main='Monthly Pneumonia and Influenza Deaths in US',ylab='Number of Dea
 #######################
 #Stationarity
 #time series is the realization of stochastic process
-purely_random_process=ts(rnorm(100)) #ts½«dataframe±ä³Étime series,rnorm means normal random variables
+purely_random_process=ts(rnorm(100)) #tså°†dataframeå˜æˆtime series,rnorm means normal random variables
 print(purely_random_process)
 acf(purely_random_process, type='covariance') #use acf to plot
-acf(purely_random_process, main='Correlogram of a purely random process') #À¶É«µÄÏÈ´ú±íÓĞÒâË®×¼
+acf(purely_random_process, main='Correlogram of a purely random process') #è“è‰²çš„å…ˆä»£è¡¨æœ‰æ„æ°´å‡†
 (acf(purely_random_process, main='Correlogram of a purely random process'))
 
 #######################
@@ -96,7 +99,7 @@ acf(purely_random_process, main='Correlogram of a purely random process') #À¶É«µ
 #Random Walk
 x=NULL
 x[1]=0
-for(i in 2:1000){x[i]=x[i-1]+rnorm(1)} #rnorm(1)Ö»È¡Ò»¸önormal random variable
+for(i in 2:1000){x[i]=x[i-1]+rnorm(1)} #rnorm(1)åªå–ä¸€ä¸ªnormal random variable
 print(x)
 # however x isn't a time series database, so need to generate time series database
 random_walk=ts(x)
@@ -109,7 +112,7 @@ acf(diff(random_walk))
 ########Lec 9##########
 #######################
 #MA process
-#xt=zt +¦Ázt-1 + ¦Âzt-2, the independent variable depends on several past white noise.
+#xt=zt +Î±zt-1 + Î²zt-2, the independent variable depends on several past white noise.
 #MA(2) process
 noise=rnorm(10000)
 #Introduce a variable
@@ -167,17 +170,17 @@ acf=acf(x,main='Autocorrelation of AR(2) time series')
 phi1=.5;phi2=-.4
 x2<-arima.sim(list(ar=c(phi1,phi2)),n=1000)
 par(mfrow=c(2,1))
-plot(x2,main=paste('AR(2) time series,phi1=',phi1,'phi2=',phi2)) #paste½«ÎÄ×Ö·ûÁ¬½ÓÆğÀ´
+plot(x2,main=paste('AR(2) time series,phi1=',phi1,'phi2=',phi2)) #pasteå°†æ–‡å­—ç¬¦è¿æ¥èµ·æ¥
 acf=acf(x2,main='Autocorrelation of AR(2) time series')
 
 #######################
 ########Lec 12#########
 #######################
 #PAFC function
-#PAFC use to determine orders of AR(¦Ñ) process.
+#PAFC use to determine orders of AR(Ï) process.
 #For MA(q) process,ACF is enough to determine orders.
 #1st,AR(2) Process
-rm(list=ls(all=TRUE)) #rm()Çå¿ÕËùÓĞ¼ÇÒä
+rm(list=ls(all=TRUE)) #rm()æ¸…ç©ºæ‰€æœ‰è®°å¿†
 par(mfrow=c(3,1))
 phi.1=.6;phi.2=.2
 data.ts=arima.sim(n=500,list(ar=c(phi.1,phi.2)))
@@ -193,10 +196,10 @@ plot(data.ts,main=paste('Auroregressive Process with phi1=',phi.1,'phi2=',phi.2,
 acf(data.ts,main='Autocorrelation Function')
 acf(data.ts,type='partial',main='Partial Autocorrelation Function')
 #3rd,MA process-take Beveridge as an example
-bev=read.csv('beveridge.csv',header = TRUE) #²»½«header×÷ÎªµÚÒ»ĞĞ
-bev.ts=ts(bev[,2],start = 1500) #[:2]´ÓµÚ¶şÁĞ¿ªÊ¼È¡Êı¾İ£¬´Ó1500Äê¿ªÊ¼
+bev=read.csv('beveridge.csv',header = TRUE) #ä¸å°†headerä½œä¸ºç¬¬ä¸€è¡Œ
+bev.ts=ts(bev[,2],start = 1500) #[:2]ä»ç¬¬äºŒåˆ—å¼€å§‹å–æ•°æ®ï¼Œä»1500å¹´å¼€å§‹
 plot(bev.ts,ylab='price',main='Beveridge Wheat Price Data')
-bev.MA=filter(bev.ts,rep(1/31,31),sides=2) #MA process using filter commmand:ÏòÉÏÏòÏÂ×¥È¡¸÷×¥È¡15¸öÊı¾İµã
+bev.MA=filter(bev.ts,rep(1/31,31),sides=2) #MA process using filter commmand:å‘ä¸Šå‘ä¸‹æŠ“å–å„æŠ“å–15ä¸ªæ•°æ®ç‚¹
 lines(bev.MA,col='red')
 par(mfrow=c(3,1))
 Y=bev.ts/bev.MA #notice:there are some NA in bev.ts so later we'll deal with this
@@ -213,7 +216,7 @@ ar(na.omit(Y),order.max = 5) #Shows that coefficients are only 2
 install.packages("isdals")
 library(isdals);data(bodyfat)
 attach(bodyfat)
-pairs( cbind( Fat, Triceps, Thigh, Midarm) ) #cbindĞÎ³É¾ØÕó
+pairs( cbind( Fat, Triceps, Thigh, Midarm) ) #cbindå½¢æˆçŸ©é˜µ
 cor( cbind( Fat, Triceps, Thigh, Midarm) ) #triceps and thigh has high correlation so we gonna partial it out
 Fat.hat = predict(lm(Fat~Thigh))
 Triceps.hat = predict( lm(Triceps~Thigh) )
@@ -388,7 +391,7 @@ arima(data, order=c(4,0,0), include.mean=FALSE )
 #Estimate x_t=0.7x_t-1+z_t+0.2z_t-1(AR1+MA1)
 rm(list=ls(all=TRUE))
 set.seed(500) 
-data = arima.sim( list(order = c(1,0,1), ar =.7, ma=.2), n = 1000000) #c(1,0,1)±íÊ¾ARµÄ1£¬²î·Ö½×ÊıµÄ0£¬MAµÄ1
+data = arima.sim( list(order = c(1,0,1), ar =.7, ma=.2), n = 1000000) #c(1,0,1)è¡¨ç¤ºARçš„1ï¼Œå·®åˆ†é˜¶æ•°çš„0ï¼ŒMAçš„1
 par(mfcol = c(3,1 ))
 plot(data, main="ARMA(1,1) Time Series: phi1=.7, theta1=.2", xlim=c(0,400)) #first terms
 acf(data, main="Autocorrelation of ARMA(1,1), phi1=.7, theta1=.2")
@@ -400,7 +403,7 @@ plot(discoveries,
 stripchart(discoveries, method = "stack", offset=.5, at=.15,pch=19,
            main="Number of Discoveries Dotplot",
            xlab="Number of Major Scientific Discoveries in a Year",
-           ylab="Frequency") #stripchart ÓÃÓÚÀëÉ¢±äÁ¿
+           ylab="Frequency") #stripchart ç”¨äºç¦»æ•£å˜é‡
 par(mfcol = c(2,1 ))
 acf(discoveries, main="ACF of Number of Major Scientific Discoveries in a Year")
 acf(discoveries, type="partial", main="PACF of Number of Major Scientific Discoveries
@@ -435,7 +438,7 @@ birth.data$Date<-as.Date(birth.data$Date, "%Y/%m/%d")
 plot(number_of_births ~ birth.data$Date, type = "l",
      main='Daily total female births in california, 1959',
      ylab = 'Number of births', xlab='Date')
-# Test for correlation,H0£º¦Ñ1=¦Ñ2=...=0
+# Test for correlation,H0ï¼šÏ1=Ï2=...=0
 Box.test(number_of_births, lag = log(length(number_of_births)))
 # plot the differenced series
 plot(diff(number_of_births) ~ birth.data$Date[1:364], type = "l",
@@ -463,7 +466,7 @@ df<-data.frame(row.names=c('AIC', 'SSE', 'p-value'), c(model1$aic, SSE1, model1.
                c(model4$aic, SSE4, model4.test$p.value))
 colnames(df)<-c('Arima(0,1,1)','Arima(0,1,2)', 'Arima(7,1,1)', 'Arima(7,1,2)')
 format(df, scientific=FALSE)
-#all pvalue are big so we cannot reject H0:¦Ñ=0¡ª¡ªno autocorrelation in residuals
+#all pvalue are big so we cannot reject H0:Ï=0â€”â€”no autocorrelation in residuals
 #min AIC shows(0,1,2) is the best, min SSE shows(7,1,2) is the best, however we choose (0,1,2) for the reason of simplicity
 sarima(number_of_births, 0,1,2,0,0,0)
 #So the fitted model is:(1-B)Xt=0.015+Zt-0.8511Zt-1-0,1113Zt-2
@@ -522,7 +525,7 @@ par(mfrow=c(3,1))
 plot.ts(x,main='Simulated time series SARIMA(0,0,1,0,0,1)_12')
 plot.ts(x[12:120], main='The first 10 months of simulation SARIMA(0,0,1,0,0)_12', ylab='') 
 acf(x, main='SARIMA(0,0,1,0,0,1)_12 Simulation')
-#acf shows spike at lag11 which doesn't include in the model,why?¡ª¡ªcalculate r(11)&¦Ñ(11) by yourself
+#acf shows spike at lag11 which doesn't include in the model,why?â€”â€”calculate r(11)&Ï(11) by yourself
 
 #######################
 ########Lec 21#########
@@ -600,7 +603,7 @@ forecast(model)#point estimation under 80% and 90% confidence interval in next 2
 install.packages("devtools")
 devtools::install_github("FinYang/tsdl")
 library(tsdl)
-milk <- subset(tsdl,description='Monthly milk production: pounds per cow. Jan 62 ¨C Dec 75')[1] #extract data from tsdl
+milk <- subset(tsdl,description='Monthly milk production: pounds per cow. Jan 62 â€“ Dec 75')[1] #extract data from tsdl
 milk <- Reduce(rbind, milk) #convert list into matrix
 plot(milk)# observe trend and seasonality
 plot(milk,xlim=c(1962,1964))#zoom into the first 2 years
@@ -662,7 +665,7 @@ axis(1, at=0:mx/12, labels=0:mx)
 sales_ldiff <- diff(diff(log(sales)),12)
 plot(sales_ldiff)
 par(mfrow=c(2,1))
-acf(sales_ldiff,50)#lag1´ú±ílag10
+acf(sales_ldiff,50)#lag1ä»£è¡¨lag10
 pacf(sales_ldiff,50)
 #observe q=p=1
 d=1
@@ -710,7 +713,7 @@ acf(rain.ts, main="ACF: London Rainfall")
 library(forecast)
 auto.arima(rain.ts) #check if there is autocorrelations
 #SES forecasting
-#x_{n+1}^{n}=ax_{n}+(1-a)x_{n}^{n-1}¡ª¡ªSES
+#x_{n+1}^{n}=ax_{n}+(1-a)x_{n}^{n-1}â€”â€”SES
 alpha=.2 #increase alpha for more rapid decay
 forecast.values = NULL #establish array to store forecast values
 n = length(rain.data)
