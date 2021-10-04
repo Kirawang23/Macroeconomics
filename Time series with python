@@ -1,0 +1,289 @@
+############################
+#########  FOR LOOP  #######
+############################
+# range(start, stop[, step])
+for i in range(10):
+    i += 1
+print(i)
+for i in range(3, 10, 2):
+    print(i)
+# logical language first run if() then elif() and then else(). elif() can nest in if()
+x = 7
+if x >= 10:
+    y = 2
+elif x >= 5:
+    y = 1
+else:
+    y = 0
+print(y)
+############################
+####  Vector with Numpy  ###
+############################
+import numpy as np
+
+np.log(1.01)
+# np.array() converge a list to an array,which can be treated as vectors
+A = np.array([[1, 2, 3], [4, 5, 6]])
+print(A)
+# np.dot() or @ produce transposed matrix
+# * returns elementwise product
+np.dot(A, A.T)
+A @ A.T
+A * A
+# np.arange() returns ndarray range
+np.arange(10)
+range(10)
+
+############################
+# data treatment with Pandas#
+############################
+import pandas as pd
+
+# import csv files
+RealGDPJP = pd.read_csv('JPNRGDPEXP.csv', header=0,
+                        index_col=0)  # treat 1st row as a header and  1st column as an index
+RealGDPJP
+# 1st column is called index which we can use index() to access
+# rest columns store a series
+# convert index to time series(index with frequency)
+index = pd.date_range(RealGDPJP.index[0], periods=RealGDPJP.shape[0],
+                      freq='q')  # 建立时间index，首先从第一列第一个时间开始，频率为108,日期类型为季度
+RealGDPJP.set_index(index, inplace=True)  # 将列转化为索引index
+type(RealGDPJP.index)
+# 使用FRED数据时也可以用pandas_datareader 实现数据转化
+import pandas_datareader.data as web
+import datetime as datetime
+
+RealGDPJP2 = web.DataReader('JPNRGDPEXP',
+                            'fred',
+                            start=datetime.datetime(1994, 1, 1),
+                            end=datetime.datetime(2020, 10, 1))
+RealGDPJP2
+# access elemment of a dataframe by .iloc
+RealGDPJP2.iloc[-2:, :]  # 取所有列的倒数两行
+RealGDPJP2.loc[['2020-01-01', '2020-10-01'], ['JPNRGDPEXP']]  # 取变量名为‘2020-01-01’的位于‘JPNRGDPEXP’的数
+# substract a subsample from data using =
+Data2013 = RealGDPJP2['2013-01-01':'2013-10-01'].loc[:, ['JPNRGDPEXP']]
+Data2013
+
+############################
+### Plot with matplotlib ###
+############################
+# plot original data
+from matplotlib import pyplot as plt
+
+plt.plot(RealGDPJP2.index, RealGDPJP2.iloc[:, 0])  # index变量~第一列的所有行
+# MA process
+RealGDPJP2['MA'] = RealGDPJP2['JPNRGDPEXP'].rolling(window=4, center=True).mean()  # 每20个值为一个单位，取均值作为新的数据点加入原来的dataframe
+plt.plot(RealGDPJP2.index, RealGDPJP2['JPNRGDPEXP'])
+plt.plot(RealGDPJP2.index, RealGDPJP2['MA'])
+RealGDPJP2
+
+############################
+### Estimate with sklearn###
+############################
+# install packages scikit-learn
+import pip
+
+pip.main(['install', 'scikit-learn'])
+from sklearn.linear_model import LinearRegression as lr
+
+import pip
+
+pip.main(['install', 'statsmodels'])
+import statsmodels.api as sm
+
+# AR(2) process
+RealGDPJP['MA'] = RealGDPJP['JPNRGDPEXP'].rolling(window=4, center=True).mean()
+DataL = np.log(RealGDPJP['MA']) * 100
+DataLd = DataL.diff(1)  # create 1st difference series
+DataLd = DataLd.dropna(how='any')  # drop observations with a NaN
+Data_Y = DataLd.iloc[:-2]  # dependent variable taking values from 1st to 2nd from the last.
+X1 = DataLd.iloc[1:-1]  # X1 taking values from 2nd to the 1st from the end
+X2 = DataLd.iloc[2:]  # X2 taking values from 3rd to the end
+Data_X = np.vstack([X1, X2]).T  # independent variable while T means transposed
+model_AR2 = lr(fit_intercept=True)  # add intercept in model
+model_AR2.fit(Data_X, Data_Y)  # add fit value to show regression result
+print(model_AR2.intercept_)
+print(model_AR2.coef_)
+plt.plot(Data_Y)
+plt.plot(Data_Y.index, model_AR2.predict(Data_X))  # be sure to reg index/predict when run regression
+# Use stasmodels to run OLS regression
+model2 = sm.tsa.AutoReg(DataLd, lags=2, old_names=False)
+result = model2.fit()
+print(result.aic)
+print(result.params)
+
+############################
+####### HP filtering  ######
+############################
+# HP filter seperates y into yc and yt then minmize objective function to obtain the optimal yt with λ=1600(seasonal data)
+cycle, trend = sm.tsa.filters.hpfilter(RealGDPJP['JPNRGDPEXP'],
+                                       1600)  # HP filter can be obtained directly by stasmodels
+RealGDPJP['cycle'] = cycle
+RealGDPJP['trend'] = trend
+plt.plot(RealGDPJP.index, RealGDPJP['JPNRGDPEXP'])
+plt.plot(RealGDPJP.index, RealGDPJP['trend'])
+plt.plot(RealGDPJP.index, RealGDPJP['cycle'])
+
+############################
+######### VAR model ########
+############################
+from statsmodels.tsa.api import VAR
+
+X = pd.read_csv('DATASET_VAR_GK.csv')
+X.columns
+dataVAR = X.loc[:, ['LCPI', 'LIP', 'FF']]  # select 3 columns
+dataVAR.head
+# lag selection
+model = VAR(dataVAR)
+lag_length = model.select_order(maxlags=12)
+print(lag_length.summary())
+
+############################
+## Granger causality test ##
+############################
+# Test whether x and y are independent or causal or one-way causal
+results = model.fit(12)  # select lag 12th to estimate
+GrangerTest = results.test_causality('FF', 'LCPI', kind='f', signif=0.05)
+print(GrangerTest.summary())  # Reject H0 that x and y are independent
+
+############################
+########### IRF  ###########
+############################
+IRF = results.irf(periods=24)  # IRF shocks at time 0 and return IRF for times 0 through 23
+IRF.plot(orth=True, signif=0.05)  # orth means orthogonalized, signif means significance level
+
+#################################
+# HW1 Trend-cycle decomposition #
+#################################
+import numpy as np
+import pandas as pd
+import scipy as sp
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression as lr
+import statsmodels as sm
+import statsmodels.tsa.api as tsa
+
+
+# 1st step: Import data
+import pandas as pd
+
+data1 = pd.read_csv('data.csv', header=0, index_col=0)  # download from https://fred.stlouisfed.org/series/JPNRGDPEXP
+print(data1.shape[0])
+index = pd.date_range(data1.index[0], periods=data1.shape[0],
+                      freq='QS')  # set date index,QS means quarter start frequency
+data1.set_index(index, inplace=True)  # add date index
+data1 = data1['1994-01-01':'2020-10-01']  # limit date range
+# 2nd step: Convert data into ideal form
+import numpy as np
+
+data1['log'] = np.log(data1) * 100  # log transformation
+data1 = data1.dropna(how='any')  # drop na
+# 3rd step: Log selection
+from statsmodels.tsa.ar_model import ar_select_order
+import statsmodels.api as sm
+
+print(np.array(data1['log']).shape)  # 查看是否为一维
+print(data1['log'])
+mod = ar_select_order(data1['log'], maxlag=12, ic='aic', trend='ct',
+                      old_names='False')  # select lags using aic,ct means 'constant and trend'
+print(mod.ar_lags)  # optimal lag=1, the last element of ar_lags
+print(mod.aic)  # lag=1 with smallest aic
+# 4th step： Test Stationary
+res = sm.tsa.stattools.adfuller(data1['log'], maxlag=1, regression='ct',
+                                autolag=None)  # use adf test to test stationarity of data
+print(res)
+# another way : compute aic values
+import statsmodels.tsa.api as tsa
+
+aic = np.zeros(13)
+for i in range(13):
+    mod_i = tsa.AutoReg(data1['log'], lags=i, old_names=False, trend='ct')
+    res_i = mod_i.fit()
+    aic[i] = res_i.aic
+print(aic)
+# 5th step: Decompose data into trend and cyclical components using linear model
+# Y_t = \mu + \delta * t + u_t
+T = len(data1)
+data1['Time'] = np.arange(T)  # convert time to array and add time value to  data
+from sklearn.linear_model import LinearRegression as lr  # Run linear
+
+model_lr = lr(fit_intercept=True)  # create linear model
+model_lr.fit(data1[['Time']], data1[[
+    'log']])  # fit命令第一项为dataframe 第二项为含目标变量的series，使用dataframe需要两个括号，选择dataframe中的一列series使用一个括号 referencce：https://community.dataquest.io/t/lr-fit-question/549355
+data1['trend'] = model_lr.predict(data1[['Time']])
+data1['cycle'] = data1['log'] - data1['trend']  # 相减得到cycle部分
+print(model_lr.intercept_)
+print(model_lr.coef_)
+# 6th step: plot trend and cycle
+import matplotlib.pyplot as plt
+
+plt.figure(1, figsize=(10, 5), dpi=200)  # create a figure then all the following figures will show on it
+plt.plot(data1['log'], label='GDP')
+plt.plot(data1['trend'], label='Trend')
+plt.legend()  # add legends
+plt.title('Real GDP in Japan')
+plt.savefig('Fig_GDP.png')
+# 7th step: decompose trend and cycle components by HP filter
+import statsmodels.api as sm
+
+cycle, trend = sm.tsa.filters.hpfilter(data1['log'], 1600)
+data1['HPtrend'] = trend
+data1['HPcycle'] = cycle
+plt.figure(2, figsize=(10, 5), dpi=200)
+plt.plot(data1['log'], label='GDP')
+plt.plot(data1['HPtrend'], label='HP trend')
+plt.legend()
+plt.title('Real GDP in Japan with HP filter')
+plt.savefig('Fig_GDP_HP.png')
+# 8th step: BN decomposition
+# trend = lim[E(y_t+j)-jδ]
+# first construct a first-differenced AR(12) model
+datadiff = data1[['log']].diff(1)  # first value is NA so use dropna to delete
+datadiff = datadiff.dropna()
+T = len(datadiff)
+# set lag=12
+p = 12
+# set variables
+#yt=yt-1 + ... +yt-12 so first y should be 13th value
+ylag = pd.DataFrame(np.zeros([T, p]))  # set a dataframe with 0.0 (T-rows & p-columns)
+print(ylag)
+ylag.index = datadiff.index  # set date index for y
+for i in range(p):
+    ylag.iloc[:, i] = datadiff.shift(
+        i + 1)  # shift将值全部下移(i+1)行，本段意思：对于y中的i列数字=差分后data的i+1列数字 即第一列第一行为NA，第二列第一行和第二行为NA，以此构建下三角矩阵
+ylag= ylag.iloc[p:, :]  # explanatory variable 选择第13行以后的所有数
+y = datadiff.iloc[p:,:] #independent variable
+#AR(ρ) estimation
+model = lr(fit_intercept=True)
+model.fit(ylag,y)
+# Companion matrix
+B0 = np.hstack([model.intercept_,np.zeros(p-1)]).T #hstack在水平方向平铺，第一个数为截距，其余11个为0的一维矩阵
+B1 = np.hstack([np.eye(p-1),np.zeros([p-1,1])]) #eye 返回11*11的对角矩阵，再加一列0（11行）
+B1 = np.vstack([model.coef_,B1]) #vstack在垂直方向堆叠，参数行后叠加B1
+inv = np.linalg.inv(np.eye(p) - B1) #12*12的0矩阵-B1后的逆矩阵
+delta = inv @ B0 #inv与 B0 的内积
+#trend/cycle
+ytrend_all =  pd.DataFrame(np.zeros(ylag.shape))
+ytrend_all.index = ylag.index
+for t in range(T-p):
+    datet = ylag.index[t]
+    it  = np.where(data1.index == datet)[0][0]
+    ytrend_all.iloc[t,:] = B1 @ np.linalg.inv(np.eye(p)- B1) @ (ylag.iloc[t,:] - delta) + np.flipud(data1['log'].iloc[it-p:it]).T
+bn = ytrend_all[[1]]
+bn.columns = ['trend']
+bn['cycle']= data1.iloc[p+1:,1] - bn['trend']
+plt.figure(3,figsize=(10,5),dpi=200)
+plt.plot(data1['log'],label='GDP')
+plt.plot(bn['trend'],label = 'BN Trend')
+plt.legend()
+plt.title('Real GDP in Japan :Trend  Component')
+plt.savefig('Fig_BNtrend.png')
+
+plt.figure(4, figsize=(10,5), dpi=200)
+plt.plot(bn['cycle'])
+plt.title('Real GDP in Japan: Cyclical Component')
+plt.savefig('Fig_BNcycle.png')
+
+
